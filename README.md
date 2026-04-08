@@ -2,7 +2,9 @@
 
 > *"Go back. Fetch it. Prove it."*
 
-A Claude Code skill that parses African regulatory documents and generates deep compliance reports — with every claim cited back to the exact word on the exact source page.
+A Claude Code skill — born in Ghana — that parses African regulatory documents and generates deep compliance reports with every claim cited back to the exact word on the exact source page.
+
+![Sankofa Report](assets/screenshot.png)
 
 ## The problem
 
@@ -10,14 +12,14 @@ African fintechs expanding across borders must navigate 54+ different regulatory
 
 ## What it does
 
-1. **Parses** your folder of regulatory PDFs (CBN, CBK, BOG, SARB, RBA, BNR…) in seconds using [LiteParse](https://github.com/run-llama/liteparse)
-2. **Analyses** your compliance question with Claude — finding requirements, gaps, and action items
+1. **Parses** your folder of regulatory PDFs (BOG, CBK, CBN, SARB, BNR…) in seconds — fully local, no API key
+2. **Analyses** your compliance question with Claude — finding requirements, gaps, and action items across jurisdictions
 3. **Generates** a self-contained HTML report with word-level citations and bounding boxes highlighted directly on each source page image
 
 ## Install
 
 ```bash
-npx skills add your-username/sankofa --skill research_regs
+npx skills add agbozo1/sankofa-skill --skill research_regs
 ```
 
 Or clone and add the skill path manually.
@@ -25,9 +27,10 @@ Or clone and add the skill path manually.
 ## Usage
 
 ```
-/sankofa ./regs "What licences does a mobile money operator need in Nigeria?"
-/sankofa ./regs "Our app lets users send money across borders in Nigeria and Kenya — what do we need?"
-/sankofa ./cbk-docs "What are the capital adequacy requirements for Kenyan banks?"
+/sankofa ./regs "What licences does a mobile money operator need in Ghana?"
+/sankofa ./regs "Our app lets users send money across Ghana, Nigeria and Kenya — what do we need?"
+/sankofa ./regs "What AML rules apply to a crypto exchange in Ghana and South Africa?"
+/sankofa ./regs "Compare agent banking requirements across East Africa"
 ```
 
 **Arguments:**
@@ -45,14 +48,15 @@ A timestamped HTML report (`sankofa_output/sankofa-report-YYYY-MM-DD-HHmmss.html
 
 ## Supported jurisdictions
 
-Nigeria (CBN) · Kenya (CBK) · Ghana (BOG) · South Africa (SARB) · Rwanda (BNR) · Uganda (BOU) · Tanzania (BoT) · Egypt (CBE) · Senegal (BCEAO) · + any African regulatory doc
+Ghana (BOG) · Nigeria (CBN) · Kenya (CBK) · South Africa (SARB) · Rwanda (BNR) · Uganda (BOU) · Tanzania (BoT) · Egypt (CBE) · Senegal (BCEAO) · + any African regulatory doc
 
 ## Sample data
 
-Drop some central bank PDFs into `data/sample_regs/` and try:
+The `data/sample_regs/` folder includes sample regulatory documents from Ghana, Nigeria, Kenya, South Africa, and Rwanda. Try:
 
 ```
-/sankofa ./data/sample_regs "What is required to operate a payment service in this jurisdiction?"
+/sankofa ./data/sample_regs "What capital requirements apply to a payment service provider in Ghana?"
+/sankofa ./data/sample_regs "Compare e-money licensing rules across all included jurisdictions"
 ```
 
 ## Requirements
@@ -72,4 +76,4 @@ No API key required. Both libraries run fully locally.
 
 ---
 
-*Sankofa is an Akan word from Ghana meaning "go back and fetch it" — the wisdom to look back at the source before moving forward.*
+*Sankofa is an Akan word from Ghana meaning "go back and fetch it" — the wisdom to look back at the source before moving forward. The name, the symbol, and the purpose are all Ghanaian.*

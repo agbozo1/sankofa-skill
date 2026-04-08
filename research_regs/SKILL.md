@@ -12,9 +12,9 @@ Parse a folder of African regulatory documents (CBN circulars, CBK guidelines, B
 
 **Example invocations:**
 ```
-/sankofa ./regs "What are the capital requirements for a mobile money operator in Nigeria?"
-/sankofa ./regs "Our app lets users send money across borders in Nigeria and Kenya — what licences do we need?"
-/sankofa ./regs "What AML rules apply to a crypto exchange operating in Ghana and South Africa?"
+/sankofa ./regs "What licences and capital requirements does a mobile money operator need in Ghana?"
+/sankofa ./regs "Our app processes payments across Ghana, Nigeria and Kenya — what do we need?"
+/sankofa ./regs "What AML rules apply to a crypto exchange in Ghana and South Africa?"
 /sankofa ./regs "Compare agent banking requirements across East Africa"
 /sankofa ./regs "What data localisation obligations exist for fintechs in Rwanda?"
 ```
@@ -59,9 +59,9 @@ Before answering, build a mental map of:
 
 | Country | Code | Primary Regulator | Common doc types |
 |---------|------|-------------------|-----------------|
+| Ghana | GH | BOG (Bank of Ghana) | Payment Systems Act, e-Money Guidelines, PSP Tiers |
 | Nigeria | NG | CBN (Central Bank of Nigeria) | PSP Framework, AML/CFT Regs, IMTO Guidelines |
 | Kenya | KE | CBK (Central Bank of Kenya) | Mobile Money Guidelines, NPS Regulations |
-| Ghana | GH | BOG (Bank of Ghana) | Payment Systems Act, e-Money Guidelines |
 | South Africa | ZA | SARB / FSCA / PA | NPS Act, CASP Guidance, Exchange Control Regs |
 | Rwanda | RW | BNR (National Bank of Rwanda) | Payment Services Regulation, E-Money Rules |
 | Uganda | UG | BOU (Bank of Uganda) | Mobile Money Regulations, PSP Guidelines |
