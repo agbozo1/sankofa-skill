@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sankofa — Compliance Report</title>
+  <style>
+    /* ── Design tokens ───────────────────────────────────── */
+    :root {
+      --gold:        #C9A227;
+      --gold-light:  #F5E6A3;
+      --gold-dim:    rgba(201,162,39,0.15);
+      --green:       #006B3F;
+      --green-light: #E8F5EE;
+      --red:         #CE1126;
+      --red-light:   #FDECEA;
+      --bg:          #F7F4EF;
+      --surface:     #FFFFFF;
+      --surface2:    #F2EFE9;
+      --border:      #E3DDD2;
+      --text:        #1C1917;
+      --muted:       #78716C;
+      --code-bg:     #2A2522;
+      --highlight:   rgba(201,162,39,0.30);
+      --highlight-border: rgba(201,162,39,0.80);
+      --radius:      8px;
+      --radius-lg:   14px;
+      --shadow:      0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md:   0 4px 12px rgba(0,0,0,0.10);
+    }
+
+    /* ── Reset ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      font-size: 0.875em;
+      background: var(--code-bg);
+      color: #F5E6A3;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+    .hidden-img { display: none; }
+
+    /* ── Header ──────────────────────────────────────────── */
+    header {
+      background: var(--text);
+      color: #fff;
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid var(--gold);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+    }
+    .logo-bird { display: none; }
+    .logo-sub {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #A8A29E;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .header-meta {
+      font-size: 0.8rem;
+      color: #A8A29E;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Layout ──────────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Stats bar ───────────────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .stat-card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    @media (max-width: 640px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── Jurisdictions ───────────────────────────────────── */
+    .jurisdictions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .jur-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--green-light);
+      border: 1px solid rgba(0,107,63,0.2);
+      color: var(--green);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+    }
+
+    /* ── Section labels ──────────────────────────────────── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .section-label.gold { color: var(--gold); }
+
+    /* ── Query card ──────────────────────────────────────── */
+    .query-card {
+      background: var(--text);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 2rem;
+      border-left: 4px solid var(--gold);
+    }
+    .query-card .section-label { color: var(--gold); margin-bottom: 0.6rem; }
+    .query-card h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #F5F0E8;
+    }
+
+    /* ── Analysis card ───────────────────────────────────── */
+    .analysis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+    .analysis-card .section-label { margin-bottom: 1rem; }
+
+    /* Answer typography */
+    .answer-body h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--green);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin: 1.5rem 0 0.75rem;
+    }
+    .answer-body h2:first-child { margin-top: 0; }
+    .answer-body h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1rem 0 0.4rem;
+    }
+    .answer-body p { margin-bottom: 0.75rem; font-size: 0.95rem; }
+    .answer-body ul, .answer-body ol {
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .answer-body li { margin-bottom: 0.3rem; font-size: 0.95rem; }
+    .answer-body strong { color: var(--text); font-weight: 600; }
+    .answer-body em { color: var(--muted); }
+    .answer-body a.cite-ref {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gold-dim);
+      color: var(--gold);
+      border: 1px solid rgba(201,162,39,0.3);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0 5px;
+      line-height: 1.5;
+      cursor: pointer;
+      transition: background 0.15s;
+      text-decoration: none;
+      vertical-align: middle;
+      margin: 0 1px;
+    }
+    .answer-body a.cite-ref:hover {
+      background: var(--gold);
+      color: #fff;
+    }
+
+    /* ── Citations ───────────────────────────────────────── */
+    .citations-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .citations-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .citations-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 800px) {
+      .citations-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Citation card */
+    .cit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s, border-color 0.2s;
+      scroll-margin-top: 72px;
+    }
+    .cit-card.flash {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,162,39,0.25);
+    }
+    .cit-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 0.875rem 1rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .cit-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      background: var(--gold);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 50%;
+      margin-right: 0.6rem;
+      flex-shrink: 0;
+    }
+    .cit-file {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .cit-page {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .cit-jurisdiction {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--green);
+      background: var(--green-light);
+      border: 1px solid rgba(0,107,63,0.15);
+      border-radius: 100px;
+      padding: 0.2rem 0.6rem;
+      white-space: nowrap;
+    }
+    .cit-body {
+      padding: 0.75rem 1rem;
+    }
+
+    /* Tabs */
+    .cit-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+    }
+    .cit-tab {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .cit-tab:hover { color: var(--text); }
+    .cit-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+    .cit-panel { display: none; }
+    .cit-panel.active { display: block; }
+
+    /* Canvas panel */
+    .canvas-wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+    .canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .canvas-no-match {
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* Text panel */
+    .cit-text-panel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--text);
+      max-height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+    }
+    .cit-text-panel mark {
+      background: var(--gold-light);
+      color: var(--text);
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    /* Quote + relevance */
+    .cit-quote {
+      font-size: 0.82rem;
+      font-style: italic;
+      color: var(--muted);
+      border-left: 3px solid var(--gold);
+      padding: 0.4rem 0.75rem;
+      margin: 0.6rem 0 0.4rem;
+      background: var(--gold-dim);
+      border-radius: 0 4px 4px 0;
+      word-break: break-word;
+    }
+    .cit-relevance {
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.5;
+      margin-top: 0.5rem;
+    }
+    .cit-relevance-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    /* Reg body pill */
+    .cit-regbody {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      background: var(--code-bg);
+      color: var(--gold);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      margin-left: 0.4rem;
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    footer strong { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- Hidden page images injected by generator -->
+<div id="hidden-images" aria-hidden="true">{{IMAGES_HTML}}</div>
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<header>
+  <div class="logo">
+    <img src="data:image/png;base64,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" alt="Sankofa" style="width:36px;height:36px;object-fit:contain;border-radius:4px;" />
+    SANKOFA
+    <span class="logo-sub">Regulatory Intelligence</span>
+  </div>
+  <div class="header-meta">Generated {{TIMESTAMP}}</div>
+</header>
+
+<!-- ── Main ───────────────────────────────────────────── -->
+<main class="container">
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="value">{{NUM_DOCS}}</div>
+      <div class="label">Documents Parsed</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">{{NUM_PAGES}}</div>
+      <div class="label">Pages Cited</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">{{NUM_CITATIONS}}</div>
+      <div class="label">Source Citations</div>
+    </div>
+    <div class="stat-card" id="jur-stat-card">
+      <div class="value" id="jur-stat-value">—</div>
+      <div class="label">Jurisdictions</div>
+    </div>
+  </div>
+
+  <!-- Jurisdiction tags -->
+  <div class="jurisdictions" id="jur-tags"></div>
+
+  <!-- Query -->
+  <div class="query-card">
+    <div class="section-label">Compliance Query</div>
+    <h1>{{QUESTION}}</h1>
+  </div>
+
+  <!-- Analysis -->
+  <div class="analysis-card">
+    <div class="section-label gold">Analysis</div>
+    <div class="answer-body">{{ANSWER_HTML}}</div>
+  </div>
+
+  <!-- Citations -->
+  <div class="citations-header">
+    <div class="section-label" style="margin-bottom:0">Source Citations</div>
+    <div class="citations-count">{{NUM_CITATIONS}} citations across {{NUM_DOCS}} documents</div>
+  </div>
+  <div class="citations-grid" id="citations-container"></div>
+
+</main>
+
+<footer>
+  <strong>Sankofa</strong> — Go back. Fetch it. Prove it. &nbsp;·&nbsp;
+  Powered by <a href="https://github.com/run-llama/liteparse" target="_blank">LiteParse</a> + Claude
+</footer>
+
+<script>
+  // ── Data ─────────────────────────────────────────────────────────
+  const CITATIONS = {{CITATIONS_JSON}};
+  const JURISDICTIONS = {{JURISDICTIONS_JSON}};
+  const DPI = {{DPI}};
+  const SCALE = DPI / 72;
+
+  // ── Jurisdiction display ──────────────────────────────────────────
+  (function renderJurisdictions() {
+    const container = document.getElementById('jur-tags');
+    const statVal = document.getElementById('jur-stat-value');
+    statVal.textContent = JURISDICTIONS.length || '—';
+    JURISDICTIONS.forEach(j => {
+      const tag = document.createElement('span');
+      tag.className = 'jur-tag';
+      tag.textContent = (j.flag ? j.flag + ' ' : '') + j.name + ' (' + j.code + ')';
+      container.appendChild(tag);
+    });
+  })();
+
+  // ── Text normalization ────────────────────────────────────────────
+  function normalize(str) {
+    return str
+      .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035\u02BC]/g, "'")
+      .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"')
+      .replace(/\uFB00/g, 'ff').replace(/\uFB01/g, 'fi').replace(/\uFB02/g, 'fl')
+      .replace(/\uFB03/g, 'ffi').replace(/\uFB04/g, 'ffl')
+      .replace(/\u00AD/g, '-').replace(/\u2010|\u2011/g, '-')
+      .replace(/\u2013/g, '-').replace(/\u2014/g, '--')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  // ── Find bounding boxes for a quote in textItems ──────────────────
+  function findBoxes(textItems, quote) {
+    if (!textItems || !textItems.length || !quote) return [];
+
+    const normQuote = normalize(quote);
+    if (!normQuote) return [];
+
+    // Build a concatenated string with item boundaries
+    const parts = [];
+    let cursor = 0;
+    for (const item of textItems) {
+      const norm = normalize(item.text);
+      if (!norm) continue;
+      parts.push({ item, start: cursor, end: cursor + norm.length, norm });
+      cursor += norm.length + 1; // space separator
+    }
+    const fullText = parts.map(p => p.norm).join(' ');
+
+    const idx = fullText.indexOf(normQuote);
+    if (idx === -1) {
+      // Try substring match — find first item containing any word of quote
+      const quoteWords = normQuote.split(/\s+/).filter(w => w.length > 3);
+      if (!quoteWords.length) return [];
+      const matched = parts.filter(p => quoteWords.some(w => p.norm.includes(w)));
+      if (!matched.length) return [];
+      return matched.map(p => p.item);
+    }
+
+    const endIdx = idx + normQuote.length;
+    return parts
+      .filter(p => p.end > idx && p.start < endIdx)
+      .map(p => p.item);
+  }
+
+  // ── Highlight items on canvas ─────────────────────────────────────
+  function renderCanvas(img, textItems, quote, pageWidth, pageHeight) {
+    const boxes = findBoxes(textItems, quote);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(pageWidth * SCALE);
+    canvas.height = Math.round(pageHeight * SCALE);
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    if (boxes.length) {
+      ctx.save();
+      // Group into a union rect for a clean single highlight
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const b of boxes) {
+        const x = b.x * SCALE;
+        const y = b.y * SCALE;
+        const w = (b.width || 20) * SCALE;
+        const h = (b.height || 12) * SCALE;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + w);
+        maxY = Math.max(maxY, y + h);
+      }
+
+      // Draw highlight on individual boxes
+      ctx.fillStyle = 'rgba(201,162,39,0.28)';
+      ctx.strokeStyle = 'rgba(201,162,39,0.85)';
+      ctx.lineWidth = 1.5;
+      for (const b of boxes) {
+        const pad = 1;
+        const x = b.x * SCALE - pad;
+        const y = b.y * SCALE - pad;
+        const w = (b.width || 20) * SCALE + pad * 2;
+        const h = (b.height || 12) * SCALE + pad * 2;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
+      }
+
+      ctx.restore();
+
+      // Scroll canvas so the highlight is visible
+      const scrollRatio = (minY / canvas.height);
+      requestAnimationFrame(() => {
+        const el = canvas.parentElement;
+        if (el) el.scrollTop = scrollRatio * el.scrollHeight - 60;
+      });
+    }
+
+    return { canvas, matched: boxes.length > 0 };
+  }
+
+  // ── Highlight quote in plain text ─────────────────────────────────
+  function highlightText(fullText, quote) {
+    if (!fullText) return '';
+    const escaped = fullText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (!quote) return escaped;
+    const normQuote = normalize(quote);
+    const normFull = normalize(fullText);
+    const idx = normFull.indexOf(normQuote);
+    if (idx === -1) return escaped;
+    // Map back to original
+    const before = fullText.slice(0, idx);
+    const match = fullText.slice(idx, idx + quote.length);
+    const after = fullText.slice(idx + quote.length);
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return esc(before) + '<mark>' + esc(match) + '</mark>' + esc(after);
+  }
+
+  // ── Render one citation card ──────────────────────────────────────
+  function renderCitation(cit, idx) {
+    const card = document.createElement('div');
+    card.className = 'cit-card';
+    card.id = `citation-${idx + 1}`;
+
+    // -- Head
+    const head = document.createElement('div');
+    head.className = 'cit-card-head';
+
+    const headLeft = document.createElement('div');
+    headLeft.style.display = 'flex';
+    headLeft.style.alignItems = 'flex-start';
+    headLeft.style.flex = '1';
+    headLeft.style.minWidth = '0';
+
+    const numEl = document.createElement('span');
+    numEl.className = 'cit-num';
+    numEl.textContent = idx + 1;
+
+    const fileInfo = document.createElement('div');
+    fileInfo.style.minWidth = '0';
+    const fileEl = document.createElement('div');
+    fileEl.className = 'cit-file';
+    fileEl.textContent = cit.file;
+    const pageEl = document.createElement('div');
+    pageEl.className = 'cit-page';
+    pageEl.textContent = cit.page > 0 ? `Page ${cit.page}` : 'Plaintext';
+
+    fileInfo.appendChild(fileEl);
+    fileInfo.appendChild(pageEl);
+    headLeft.appendChild(numEl);
+    headLeft.appendChild(fileInfo);
+
+    const headRight = document.createElement('div');
+    headRight.style.display = 'flex';
+    headRight.style.flexDirection = 'column';
+    headRight.style.alignItems = 'flex-end';
+    headRight.style.gap = '4px';
+    headRight.style.marginLeft = '8px';
+    headRight.style.flexShrink = '0';
+
+    if (cit.jurisdiction || cit.jurisdictionName) {
+      const jurEl = document.createElement('span');
+      jurEl.className = 'cit-jurisdiction';
+      jurEl.textContent = (cit.jurisdictionFlag || '') + ' ' + (cit.jurisdictionName || cit.jurisdiction || '');
+      headRight.appendChild(jurEl);
+    }
+    if (cit.regulatoryBody) {
+      const rbEl = document.createElement('span');
+      rbEl.className = 'cit-regbody';
+      rbEl.textContent = cit.regulatoryBody;
+      headRight.appendChild(rbEl);
+    }
+
+    head.appendChild(headLeft);
+    head.appendChild(headRight);
+    card.appendChild(head);
+
+    // -- Body
+    const body = document.createElement('div');
+    body.className = 'cit-body';
+
+    if (cit.type === 'liteparse' && cit.imgId) {
+      // Tabs: Visual | Text
+      const tabs = document.createElement('div');
+      tabs.className = 'cit-tabs';
+      const tabVisual = document.createElement('div');
+      tabVisual.className = 'cit-tab active';
+      tabVisual.textContent = 'Visual';
+      const tabText = document.createElement('div');
+      tabText.className = 'cit-tab';
+      tabText.textContent = 'Text';
+      tabs.appendChild(tabVisual);
+      tabs.appendChild(tabText);
+      body.appendChild(tabs);
+
+      // Visual panel
+      const panelVisual = document.createElement('div');
+      panelVisual.className = 'cit-panel active';
+      const canvasWrap = document.createElement('div');
+      canvasWrap.className = 'canvas-wrap';
+      canvasWrap.style.maxHeight = '360px';
+      canvasWrap.style.overflowY = 'auto';
+
+      const img = document.getElementById(cit.imgId);
+      if (img && img.complete) {
+        const { canvas, matched } = renderCanvas(img, cit.textItems, cit.quote, cit.pageWidth, cit.pageHeight);
+        canvasWrap.appendChild(canvas);
+        if (!matched) {
+          const note = document.createElement('div');
+          note.className = 'canvas-no-match';
+          note.textContent = 'Quote not located on page — shown without highlight';
+          canvasWrap.appendChild(note);
+        }
+      } else if (img) {
+        img.onload = () => {
+          const { canvas, matched } = renderCanvas(img, cit.textItems, cit.quote, cit.pageWidth, cit.pageHeight);
+          canvasWrap.innerHTML = '';
+          canvasWrap.appendChild(canvas);
+        };
+        canvasWrap.textContent = 'Loading…';
+      }
+      panelVisual.appendChild(canvasWrap);
+      body.appendChild(panelVisual);
+
+      // Text panel
+      const panelText = document.createElement('div');
+      panelText.className = 'cit-panel';
+      const textDiv = document.createElement('div');
+      textDiv.className = 'cit-text-panel';
+      textDiv.innerHTML = highlightText(cit.pageText, cit.quote);
+      panelText.appendChild(textDiv);
+      body.appendChild(panelText);
+
+      // Tab switching
+      tabVisual.addEventListener('click', () => {
+        tabVisual.classList.add('active'); tabText.classList.remove('active');
+        panelVisual.classList.add('active'); panelText.classList.remove('active');
+      });
+      tabText.addEventListener('click', () => {
+        tabText.classList.add('active'); tabVisual.classList.remove('active');
+        panelText.classList.add('active'); panelVisual.classList.remove('active');
+      });
+
+    } else if (cit.type === 'plaintext' || cit.type === 'text-only') {
+      const textDiv = document.createElement('div');
+      textDiv.className = 'cit-text-panel';
+      textDiv.innerHTML = highlightText(cit.pageText || cit.quote, cit.quote);
+      body.appendChild(textDiv);
+    }
+
+    // Quote
+    if (cit.quote) {
+      const quoteEl = document.createElement('div');
+      quoteEl.className = 'cit-quote';
+      quoteEl.textContent = '\u201C' + cit.quote + '\u201D';
+      body.appendChild(quoteEl);
+    }
+
+    // Relevance
+    if (cit.relevance) {
+      const relLabel = document.createElement('div');
+      relLabel.className = 'cit-relevance-label';
+      relLabel.textContent = 'Why it matters';
+      const relEl = document.createElement('div');
+      relEl.className = 'cit-relevance';
+      relEl.textContent = cit.relevance;
+      body.appendChild(relLabel);
+      body.appendChild(relEl);
+    }
+
+    card.appendChild(body);
+    return card;
+  }
+
+  // ── Wire up citation click-to-scroll ──────────────────────────────
+  function initCitationLinks() {
+    document.querySelectorAll('a.cite-ref').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const num = parseInt(link.dataset.cite, 10);
+        const target = document.getElementById(`citation-${num}`);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.add('flash');
+        setTimeout(() => target.classList.remove('flash'), 1400);
+      });
+    });
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────
+  (function init() {
+    const container = document.getElementById('citations-container');
+    CITATIONS.forEach((cit, i) => {
+      container.appendChild(renderCitation(cit, i));
+    });
+    initCitationLinks();
+  })();
+</script>
+</body>
+</html>

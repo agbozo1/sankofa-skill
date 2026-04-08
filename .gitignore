@@ -1,0 +1,23 @@
+# Virtual environment
+.venv/
+
+# Generated reports
+sankofa_output/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Temp parse files
+/tmp/sankofa_*.json
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp

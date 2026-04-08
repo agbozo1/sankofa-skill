@@ -1,0 +1,15 @@
+{
+  "name": "sankofa",
+  "description": "African regulatory compliance intelligence — parse regulatory documents and generate cited compliance reports with word-level source citations",
+  "version": "1.0.0",
+  "author": "sankofa",
+  "homepage": "https://github.com/your-username/sankofa",
+  "skills": [
+    {
+      "name": "sankofa",
+      "description": "Parse African regulatory PDFs and generate a compliance analysis report with visual citations",
+      "path": "research_regs",
+      "trigger": "/sankofa"
+    }
+  ]
+}
