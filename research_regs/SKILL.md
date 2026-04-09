@@ -7,24 +7,90 @@ description: Parse African regulatory PDFs and generate cited compliance reports
 
 > *"Go back. Fetch it. Prove it."*
 
-Parse a folder of African regulatory documents (CBN circulars, CBK guidelines, BOG frameworks, SARB rules, etc.) and generate a structured compliance analysis report — with every claim cited back to the exact word on the exact page.
+Ask a compliance question — Sankofa finds the right regulatory documents online, downloads them, parses every page, and generates a cited report with every claim highlighted back to the exact source word.
 
 ## Arguments
 
-`$ARGUMENTS` should contain:
-- **First argument (`$0`)**: Path to directory containing regulatory documents (PDFs, DOCX, PPTX)
-- **Remaining arguments**: Your compliance question or product description
+`$ARGUMENTS` can be used in two ways:
 
-**Example invocations:**
+**Auto-fetch mode** — just ask your question, Sankofa finds and downloads the documents:
 ```
-/sankofa ./regs "What licences and capital requirements does a mobile money operator need in Ghana?"
-/sankofa ./regs "Our app processes payments across Ghana, Nigeria and Kenya — what do we need?"
-/sankofa ./regs "What AML rules apply to a crypto exchange in Ghana and South Africa?"
-/sankofa ./regs "Compare agent banking requirements across East Africa"
-/sankofa ./regs "What data localisation obligations exist for fintechs in Rwanda?"
+/sankofa "What licences does a mobile money operator need in Ghana?"
+/sankofa "Our app processes payments across Ghana, Nigeria and Kenya — what do we need?"
+/sankofa "What AML rules apply to a crypto exchange in Ghana and South Africa?"
 ```
 
-If either argument is missing, ask the user to provide it.
+**Local mode** — point it at your own folder of PDFs:
+```
+/sankofa ./my-regs "What licences does a mobile money operator need in Ghana?"
+```
+Use when you have specific documents (custom circulars, draft regulations, internal policies).
+
+**Hybrid mode** — combine your local folder with online search:
+```
+/sankofa ./my-regs --hybrid "What licences does a mobile money operator need in Ghana?"
+```
+Use when you have some documents locally but want Sankofa to supplement with the latest public docs from regulator websites. Your local files take priority — online docs fill the gaps.
+
+**Detecting the mode:**
+- `$0` starts with `.`, `/`, `~`, or `C:\` AND `$ARGUMENTS` contains `--hybrid` → **hybrid mode**
+- `$0` starts with `.`, `/`, `~`, or `C:\` (no `--hybrid`) → **local mode**
+- Otherwise → **auto-fetch mode**
+
+Strip `--hybrid` from the question string before processing.
+
+## Step 0 — Fetch Documents (auto-fetch and hybrid modes)
+
+Skip this step if using **local mode** — go straight to Step 1.
+
+**Hybrid mode:** run all sub-steps below, but at Step 0d download into `/tmp/sankofa_fetch/`. Then at Step 1, copy all local files from the user's directory into `/tmp/sankofa_fetch/` as well (local files take priority — skip download if a file with the same name already exists locally). Use `/tmp/sankofa_fetch/` as the unified data directory for Steps 1–5.
+
+**0a. Extract jurisdictions from the question**
+
+Scan the question for country names, regulator names, currency codes, or regional hints:
+- "Ghana", "BOG", "GHS", "Accra" → GH
+- "Nigeria", "CBN", "NGN", "Lagos" → NG
+- "Kenya", "CBK", "KES", "Nairobi" → KE
+- "South Africa", "SARB", "ZAR", "Johannesburg" → ZA
+- "Rwanda", "BNR", "RWF", "Kigali" → RW
+- "Uganda", "BOU", "UGX" → UG
+- "Tanzania", "BoT", "TZS" → TZ
+- "East Africa" → KE, UG, TZ, RW
+- "West Africa" → GH, NG, SN
+- No jurisdiction found → ask the user which countries to cover
+
+**0b. Load the registry**
+
+Read the registry to get known document URLs for the detected jurisdictions:
+```bash
+cat "${CLAUDE_SKILL_DIR}/data/registry.json"
+```
+Collect all document URLs for each matched jurisdiction. Also note each jurisdiction's `search_query` for the fallback step.
+
+**0c. Search for additional documents**
+
+For each jurisdiction, use WebSearch to find any relevant PDFs not in the registry. Use the `search_query` from the registry as your search term, refined by the topic in the user's question. For example:
+- Question mentions "AML" in Ghana → search: `site:bog.gov.gh filetype:pdf AML payment`
+- Question mentions "crypto" in South Africa → search: `site:resbank.co.za filetype:pdf crypto CASP`
+
+Collect any new PDF URLs found. Combine with registry URLs — deduplicate.
+
+**0d. Download the documents**
+
+Create a temp directory and download all collected PDFs:
+```bash
+python "${CLAUDE_SKILL_DIR}/scripts/fetch_docs.py" \
+    --urls <url1> <url2> <url3> ... \
+    --output /tmp/sankofa_fetch/
+```
+
+The script prints downloaded file paths to stdout and reports failures to stderr.
+
+**If some downloads fail:** note which ones failed and why (403, SSL, HTML redirect). Mention this to the user at Step 5. Do not abort — proceed with whatever was successfully downloaded.
+
+**If all downloads fail:** tell the user which sites blocked the download and suggest they download manually and re-run with local mode: `/sankofa ./downloaded-regs "..."`.
+
+Set the data directory to `/tmp/sankofa_fetch/` and proceed to Step 1.
 
 ## Step 1 — Parse Documents
 

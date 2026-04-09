@@ -1,0 +1,182 @@
+{
+  "GH": {
+    "name": "Ghana",
+    "regulatory_body": "BOG",
+    "base_url": "https://www.bog.gov.gh",
+    "search_query": "site:bog.gov.gh filetype:pdf payment systems licensing e-money",
+    "documents": [
+      {
+        "title": "Payment Systems and Services Act 2019 (Act 987)",
+        "url": "https://www.bog.gov.gh/wp-content/uploads/2019/08/Payment-Systems-and-Services-Act-2019-Act-987.pdf",
+        "topics": ["licensing", "payments", "e-money", "psp"],
+        "year": 2019
+      },
+      {
+        "title": "Guidelines for E-Money Issuers in Ghana",
+        "url": "https://www.bog.gov.gh/wp-content/uploads/2019/08/Guidelines-for-E-Money-Issuers-in-Ghana.pdf",
+        "topics": ["e-money", "mobile money", "licensing"],
+        "year": 2019
+      },
+      {
+        "title": "AML/CFT Guidelines for Payment Service Providers",
+        "url": "https://www.bog.gov.gh/wp-content/uploads/2021/06/AML-CFT-Guidelines-for-PSPs.pdf",
+        "topics": ["aml", "cft", "compliance", "kyc"],
+        "year": 2021
+      }
+    ]
+  },
+  "NG": {
+    "name": "Nigeria",
+    "regulatory_body": "CBN",
+    "base_url": "https://www.cbn.gov.ng",
+    "search_query": "site:cbn.gov.ng filetype:pdf payment service provider framework guidelines",
+    "documents": [
+      {
+        "title": "CBN Regulatory Framework for BVN Operations",
+        "url": "https://www.cbn.gov.ng/Out/2021/FPRD/Regulatory%20Framework%20for%20PSPs.pdf",
+        "topics": ["psp", "licensing", "payments"],
+        "year": 2021
+      },
+      {
+        "title": "CBN AML/CFT Regulations 2022",
+        "url": "https://www.cbn.gov.ng/Out/2022/FPRD/CBN%20AML-CFT%20Regulations%202022.pdf",
+        "topics": ["aml", "cft", "compliance", "kyc"],
+        "year": 2022
+      },
+      {
+        "title": "CBN Guidelines on International Money Transfer Services",
+        "url": "https://www.cbn.gov.ng/Out/2021/FPRD/Guidelines%20on%20International%20Money%20Transfer%20Services.pdf",
+        "topics": ["cross-border", "remittance", "imto"],
+        "year": 2021
+      }
+    ]
+  },
+  "KE": {
+    "name": "Kenya",
+    "regulatory_body": "CBK",
+    "base_url": "https://www.centralbank.go.ke",
+    "search_query": "site:centralbank.go.ke filetype:pdf mobile money payment guidelines regulations",
+    "documents": [
+      {
+        "title": "National Payment System Regulations 2014",
+        "url": "https://www.centralbank.go.ke/uploads/banking_circular_letter_and_guidelines/2133753003_National%20Payment%20System%20Regulations%202014.pdf",
+        "topics": ["payments", "licensing", "nps"],
+        "year": 2014
+      },
+      {
+        "title": "CBK Guidance on Mobile Money Services",
+        "url": "https://www.centralbank.go.ke/uploads/payment_system_oversight/205526030_CBK%20Guidance%20Note%20on%20Mobile%20Money%20Services.pdf",
+        "topics": ["mobile money", "licensing", "consumer protection"],
+        "year": 2021
+      },
+      {
+        "title": "Kenya National Payments System Act 2011",
+        "url": "https://www.centralbank.go.ke/uploads/payment_system_oversight/National%20Payment%20System%20Act%202011.pdf",
+        "topics": ["licensing", "payments", "legal framework"],
+        "year": 2011
+      }
+    ]
+  },
+  "ZA": {
+    "name": "South Africa",
+    "regulatory_body": "SARB",
+    "base_url": "https://www.resbank.co.za",
+    "search_query": "site:resbank.co.za filetype:pdf fintech payment crypto CASP guidance",
+    "documents": [
+      {
+        "title": "SARB Guidance Note on Crypto Assets",
+        "url": "https://www.resbank.co.za/content/dam/sarb/publications/guidance-notes/2021/GN001-2021-Guidance-Note-Crypto-Assets.pdf",
+        "topics": ["crypto", "casp", "licensing"],
+        "year": 2021
+      },
+      {
+        "title": "National Payment System Act 78 of 1998",
+        "url": "https://www.resbank.co.za/content/dam/sarb/legislation/acts/National-Payment-System-Act-78-1998.pdf",
+        "topics": ["payments", "licensing", "legal framework"],
+        "year": 1998
+      },
+      {
+        "title": "SARB Fintech Regulatory Sandbox Framework",
+        "url": "https://www.resbank.co.za/content/dam/sarb/publications/guidance-notes/2020/Fintech-Regulatory-Sandbox-Framework.pdf",
+        "topics": ["fintech", "sandbox", "licensing"],
+        "year": 2020
+      }
+    ]
+  },
+  "RW": {
+    "name": "Rwanda",
+    "regulatory_body": "BNR",
+    "base_url": "https://www.bnr.rw",
+    "search_query": "site:bnr.rw filetype:pdf payment electronic money regulation",
+    "documents": [
+      {
+        "title": "BNR Regulation on Payment Services and Electronic Money",
+        "url": "https://www.bnr.rw/fileadmin/user_upload/Regulations/Payment_Services_Regulation_2022.pdf",
+        "topics": ["payments", "e-money", "licensing"],
+        "year": 2022
+      },
+      {
+        "title": "BNR Regulation on Agent Banking",
+        "url": "https://www.bnr.rw/fileadmin/user_upload/Regulations/Agent_Banking_Regulation.pdf",
+        "topics": ["agent banking", "mobile money"],
+        "year": 2021
+      }
+    ]
+  },
+  "UG": {
+    "name": "Uganda",
+    "regulatory_body": "BOU",
+    "base_url": "https://www.bou.or.ug",
+    "search_query": "site:bou.or.ug filetype:pdf mobile money payment regulations guidelines",
+    "documents": [
+      {
+        "title": "Bank of Uganda Mobile Money Guidelines 2020",
+        "url": "https://www.bou.or.ug/bou/bouwebsite/bouwebsite_content/Publications/Mobile_Money_Guidelines_2020.pdf",
+        "topics": ["mobile money", "licensing", "payments"],
+        "year": 2020
+      }
+    ]
+  },
+  "TZ": {
+    "name": "Tanzania",
+    "regulatory_body": "BoT",
+    "base_url": "https://www.bot.go.tz",
+    "search_query": "site:bot.go.tz filetype:pdf payment electronic money licensing regulations",
+    "documents": [
+      {
+        "title": "Bank of Tanzania Electronic Money Regulations 2015",
+        "url": "https://www.bot.go.tz/Regulations/Electronic%20Money%20Regulations%202015.pdf",
+        "topics": ["e-money", "licensing", "payments"],
+        "year": 2015
+      }
+    ]
+  },
+  "ET": {
+    "name": "Ethiopia",
+    "regulatory_body": "NBE",
+    "base_url": "https://nbe.gov.et",
+    "search_query": "site:nbe.gov.et filetype:pdf payment digital directive",
+    "documents": [
+      {
+        "title": "NBE Directive on Digital Payment Services",
+        "url": "https://nbe.gov.et/wp-content/uploads/2021/10/Digital-Payment-Services-Directive.pdf",
+        "topics": ["digital payments", "licensing", "fintech"],
+        "year": 2021
+      }
+    ]
+  },
+  "ZM": {
+    "name": "Zambia",
+    "regulatory_body": "BOZ",
+    "base_url": "https://www.boz.zm",
+    "search_query": "site:boz.zm filetype:pdf payment national system regulations",
+    "documents": [
+      {
+        "title": "Bank of Zambia National Payment Systems Regulations",
+        "url": "https://www.boz.zm/NationalPaymentSystemsRegulations.pdf",
+        "topics": ["payments", "licensing", "nps"],
+        "year": 2018
+      }
+    ]
+  }
+}

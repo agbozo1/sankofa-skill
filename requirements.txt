@@ -1,3 +1,4 @@
 pymupdf
 python-docx
 python-pptx
+requests
