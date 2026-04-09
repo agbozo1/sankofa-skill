@@ -19,7 +19,7 @@ African fintechs expanding across borders must navigate 54+ different regulatory
 ## Install
 
 ```bash
-npx skills add agbozo1/sankofa-skill --skill research_regs
+npx skills add agbozo1/sankofa-skill --skill sankofa
 ```
 
 Or clone and add the skill path manually.
