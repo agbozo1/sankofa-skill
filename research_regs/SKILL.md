@@ -1,3 +1,8 @@
+---
+name: sankofa
+description: Parse African regulatory PDFs and generate cited compliance reports with word-level source highlights. No API key required.
+---
+
 # Sankofa — African Regulatory Intelligence (`/sankofa`)
 
 > *"Go back. Fetch it. Prove it."*
