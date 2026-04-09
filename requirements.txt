@@ -1,2 +1,3 @@
-docling
 pymupdf
+python-docx
+python-pptx

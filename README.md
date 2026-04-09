@@ -62,13 +62,14 @@ The `data/sample_regs/` folder includes sample regulatory documents from Ghana, 
 ## Requirements
 
 ```
-pip install docling pymupdf
+pip install pymupdf python-docx python-pptx
 ```
 
-No API key required. Both libraries run fully locally.
+No API key required. All libraries run fully locally.
 
 - **PyMuPDF** — PDF parsing with word-level bounding boxes and page screenshots
-- **Docling** (IBM, open source) — DOCX, PPTX, images, and other formats
+- **python-docx** — DOCX text extraction
+- **python-pptx** — PPTX slide text extraction
 
 ## Inspired by
 

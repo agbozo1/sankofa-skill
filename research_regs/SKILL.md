@@ -34,8 +34,9 @@ python "${CLAUDE_SKILL_DIR}/scripts/generate_report.py" \
 ```
 
 Supported formats (no API key required — all local):
-- **PDF** → PyMuPDF (word-level bounding boxes)
-- **DOCX, PPTX, XLSX, images** → Docling (chunk-level bounding boxes)
+- **PDF** → PyMuPDF (word-level bounding boxes + page screenshots)
+- **DOCX** → python-docx (paragraph text extraction)
+- **PPTX** → python-pptx (slide text extraction)
 - **Plaintext** → .txt, .md, .rst (read directly)
 
 Output is a JSON file with text and bounding box coordinates per page.

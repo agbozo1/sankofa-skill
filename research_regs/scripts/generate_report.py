@@ -3,10 +3,11 @@
 Sankofa — African Regulatory Intelligence
 Report Generator
 
-Parsing backends (no API key required):
-  PDF              → PyMuPDF  (word-level bounding boxes + page screenshots)
-  DOCX/PPTX/other  → Docling  (text extraction, chunk-level boxes)
-  Plaintext        → read directly
+Parsing backends (no API key required — all local):
+  PDF   → PyMuPDF     (word-level bounding boxes + page screenshots)
+  DOCX  → python-docx (paragraph text extraction)
+  PPTX  → python-pptx (slide text extraction)
+  Plain → read directly
 
 Two modes:
   --parse-only : Discover and parse all supported files in a directory, output JSON
@@ -26,13 +27,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
-PDF_EXT = {".pdf"}
-DOCLING_EXTENSIONS = {
-    ".doc", ".docx", ".docm", ".odt", ".rtf",
-    ".ppt", ".pptx", ".pptm", ".odp",
-    ".xls", ".xlsx", ".xlsm", ".ods",
-    ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp",
-}
+PDF_EXT  = {".pdf"}
+DOCX_EXT = {".docx", ".docm"}
+PPTX_EXT = {".pptx", ".pptm"}
 PLAINTEXT_EXTENSIONS = {".txt", ".md", ".markdown", ".rst", ".text"}
 
 JURISDICTION_NAMES = {
@@ -58,7 +55,7 @@ JURISDICTION_FLAGS = {
 # ── File Discovery ────────────────────────────────────────────────────
 
 def discover_files(data_dir: Path, max_files: int):
-    pdf_files, docling_files, plaintext_files = [], [], []
+    pdf_files, docx_files, pptx_files, plaintext_files = [], [], [], []
 
     if not data_dir.is_dir():
         print(f"Error: {data_dir} is not a directory", file=sys.stderr)
@@ -70,21 +67,23 @@ def discover_files(data_dir: Path, max_files: int):
         ext = f.suffix.lower()
         if ext in PDF_EXT:
             pdf_files.append(f)
-        elif ext in DOCLING_EXTENSIONS:
-            docling_files.append(f)
+        elif ext in DOCX_EXT:
+            docx_files.append(f)
+        elif ext in PPTX_EXT:
+            pptx_files.append(f)
         elif ext in PLAINTEXT_EXTENSIONS:
             plaintext_files.append(f)
 
-    all_files = pdf_files + docling_files + plaintext_files
+    all_files = pdf_files + docx_files + pptx_files + plaintext_files
     if len(all_files) > max_files:
         print(f"Warning: Found {len(all_files)} files, capping at {max_files}", file=sys.stderr)
         all_files = all_files[:max_files]
-        # Re-split
-        pdf_files = [f for f in all_files if f.suffix.lower() in PDF_EXT]
-        docling_files = [f for f in all_files if f.suffix.lower() in DOCLING_EXTENSIONS]
+        pdf_files      = [f for f in all_files if f.suffix.lower() in PDF_EXT]
+        docx_files     = [f for f in all_files if f.suffix.lower() in DOCX_EXT]
+        pptx_files     = [f for f in all_files if f.suffix.lower() in PPTX_EXT]
         plaintext_files = [f for f in all_files if f.suffix.lower() in PLAINTEXT_EXTENSIONS]
 
-    return pdf_files, docling_files, plaintext_files
+    return pdf_files, docx_files, pptx_files, plaintext_files
 
 
 # ── PDF parsing with PyMuPDF (word-level bounding boxes) ─────────────
@@ -128,77 +127,54 @@ def _parse_pdf(filepath: Path) -> dict:
     }
 
 
-# ── Non-PDF parsing with Docling (text + chunk-level boxes) ──────────
+# ── DOCX parsing with python-docx ────────────────────────────────────
 
-def _parse_docling(filepath: Path) -> dict:
-    from docling.document_converter import DocumentConverter
+def _parse_docx(filepath: Path) -> dict:
+    from docx import Document
 
     t0 = time.perf_counter()
-    converter = DocumentConverter()
-    result = converter.convert(str(filepath))
-    doc = result.document
+    doc = Document(str(filepath))
+    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+    full_text = "\n".join(paragraphs)
 
-    # Group text and boxes by page number
-    page_texts: dict = {}   # pno → [str]
-    page_items: dict = {}   # pno → [{text, x, y, width, height}]
-    page_sizes: dict = {}   # pno → (width, height)
+    return {
+        "name":      filepath.name,
+        "path":      str(filepath),
+        "type":      "liteparse",
+        "parseTime": round(time.perf_counter() - t0, 3),
+        "pages": [{
+            "pageNum":   1,
+            "width":     612,
+            "height":    792,
+            "text":      full_text,
+            "textItems": [],   # no bounding boxes for DOCX
+        }],
+    }
 
-    for item, _level in doc.iterate_items():
-        text = getattr(item, "text", "") or ""
-        if not text.strip():
-            continue
-        provs = getattr(item, "prov", None) or []
-        for prov in provs:
-            pno = prov.page_no  # 1-indexed
-            if pno not in page_texts:
-                page_texts[pno] = []
-                page_items[pno] = []
-            page_texts[pno].append(text)
 
-            # Page dimensions
-            if pno not in page_sizes and pno in doc.pages:
-                pg = doc.pages[pno]
-                sz = getattr(pg, "size", None)
-                page_sizes[pno] = (sz.width, sz.height) if sz else (612, 792)
+# ── PPTX parsing with python-pptx ────────────────────────────────────
 
-            # Bounding box (chunk-level — good enough for text panel highlighting)
-            bbox = getattr(prov, "bbox", None)
-            if bbox is not None:
-                ph = page_sizes.get(pno, (612, 792))[1]
-                # Docling uses BOTTOMLEFT origin; convert to TOPLEFT for canvas
-                page_items[pno].append({
-                    "text":   text,
-                    "x":      bbox.l,
-                    "y":      ph - bbox.t,       # flip y
-                    "width":  bbox.r - bbox.l,
-                    "height": bbox.t - bbox.b,   # t > b in bottom-left coords
-                })
+def _parse_pptx(filepath: Path) -> dict:
+    from pptx import Presentation
 
-    if not page_texts:
-        # Fallback: whole-document markdown as a single "page"
-        return {
-            "name":      filepath.name,
-            "path":      str(filepath),
-            "type":      "liteparse",
-            "parseTime": round(time.perf_counter() - t0, 3),
-            "pages": [{
-                "pageNum":   1,
-                "width":     612,
-                "height":    792,
-                "text":      doc.export_to_markdown(),
-                "textItems": [],
-            }],
-        }
-
+    t0 = time.perf_counter()
+    prs = Presentation(str(filepath))
     pages_data = []
-    for pno in sorted(page_texts):
-        pw, ph = page_sizes.get(pno, (612, 792))
+
+    for i, slide in enumerate(prs.slides):
+        texts = []
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for para in shape.text_frame.paragraphs:
+                    line = "".join(run.text for run in para.runs).strip()
+                    if line:
+                        texts.append(line)
         pages_data.append({
-            "pageNum":   pno,
-            "width":     pw,
-            "height":    ph,
-            "text":      "\n".join(page_texts[pno]),
-            "textItems": page_items.get(pno, []),
+            "pageNum":   i + 1,
+            "width":     612,
+            "height":    792,
+            "text":      "\n".join(texts),
+            "textItems": [],   # no bounding boxes for PPTX
         })
 
     return {
@@ -214,15 +190,19 @@ def _parse_single_file(filepath: Path, _dpi: int) -> dict:
     ext = filepath.suffix.lower()
     if ext in PDF_EXT:
         return _parse_pdf(filepath)
-    return _parse_docling(filepath)
+    if ext in DOCX_EXT:
+        return _parse_docx(filepath)
+    if ext in PPTX_EXT:
+        return _parse_pptx(filepath)
+    raise ValueError(f"Unsupported format: {ext}")
 
 
 # ── Parse-Only Mode ──────────────────────────────────────────────────
 
 def run_parse_only(args):
     data_dir = Path(args.dir)
-    pdf_files, docling_files, plaintext_files = discover_files(data_dir, args.max_files)
-    binary_files = pdf_files + docling_files
+    pdf_files, docx_files, pptx_files, plaintext_files = discover_files(data_dir, args.max_files)
+    binary_files = pdf_files + docx_files + pptx_files
 
     if not binary_files and not plaintext_files:
         print(f"Error: No supported files found in {data_dir}", file=sys.stderr)
@@ -233,8 +213,9 @@ def run_parse_only(args):
 
     if binary_files:
         max_workers = min(args.max_workers, len(binary_files))
-        print(f"Parsing {len(binary_files)} files ({len(pdf_files)} PDF, "
-              f"{len(docling_files)} other) with {max_workers} workers...", file=sys.stderr)
+        print(f"Parsing {len(binary_files)} files "
+              f"({len(pdf_files)} PDF, {len(docx_files)} DOCX, {len(pptx_files)} PPTX) "
+              f"with {max_workers} workers...", file=sys.stderr)
         t0_all = time.perf_counter()
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -269,10 +250,11 @@ def run_parse_only(args):
         "data_dir": str(data_dir),
         "files": files_data,
         "summary": {
-            "total_files":    len(files_data),
-            "total_pages":    total_pages,
-            "pdf_files":      len(pdf_files),
-            "docling_files":  len(docling_files),
+            "total_files":     len(files_data),
+            "total_pages":     total_pages,
+            "pdf_files":       len(pdf_files),
+            "docx_files":      len(docx_files),
+            "pptx_files":      len(pptx_files),
             "plaintext_files": len(plaintext_files),
         },
     }
